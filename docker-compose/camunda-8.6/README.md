@@ -4,13 +4,11 @@ This repository contains links to Camunda Platform 8 resources, the official rel
 
 :warning: **Docker Compose is only recommended for local development.** :warning:
 
-
 We recommend using [SaaS](https://camunda.com/get-started/) or [Helm/Kubernetes](https://docs.camunda.io/docs/self-managed/setup/overview/) for development.
 
-For more information about Self-Managed, including additional [development installation options](https://docs.camunda.io/docs/self-managed/setup/overview/), see our [documentation](https://docs.camunda.io/docs/self-managed/about-self-managed/).
+For more information, check Camunda 8 Self-Managed official [documentation](https://docs.camunda.io/docs/self-managed/about-self-managed/).
 
-
-For production setups we recommend using [Helm charts](https://docs.camunda.io/docs/self-managed/setup/install/) which can be found at [helm.camunda.io](https://helm.camunda.io/).
+For production setups we recommend using [Helm charts](https://docs.camunda.io/docs/self-managed/setup/install/) which can be found at [helm.camunda.io](https://helm.camunda.io/)
 
 ## Links to additional Camunda Platform 8 repos and assets
 
@@ -22,13 +20,15 @@ For production setups we recommend using [Helm charts](https://docs.camunda.io/d
 - [Zeebe Workflow Engine](https://github.com/camunda/zeebe)
 - [Contact](https://docs.camunda.io/contact/)
 
-## Using Docker Compose
+## Using docker compose
 
 > :information_source: The docker-compose file in this repository uses the latest [compose specification](https://docs.docker.com/compose/compose-file/), which was introduced with docker compose version 1.27.0+. Please make sure to use an up-to-date docker compose version.
 
 > :information_source: Docker 20.10.16+ is required.
 
-> :information_source: To support token refresh and logout your local machine needs to resolve `keycloak` to `127.0.0.1` and the variable `KEYCLOAK_HOST` needs to be set to `keycloak` in the `.env` file.
+> :information_source: The Web Modeler service names have changed with `8.6.0-alpha2`. Run `docker compose stop modeler-webapp modeler-restapi modeler-websockets` when upgrading from a previous version to stop the old services.
+
+Be sure you are in the correct directory when running all the following commands. Use `cd docker-compose/camunda-8.6` to navigate to the correct directory.
 
 To spin up a complete Camunda Platform 8 Self-Managed environment locally the [docker-compose.yaml](docker-compose.yaml) file in this repository can be used.
 
@@ -39,16 +39,16 @@ The full environment contains these components:
 - Connectors
 - Optimize
 - Identity
-- Elasticsearch/Opensearch
+- Elasticsearch
 - Keycloak
 - PostgreSQL
+- Web Modeler (Restapi, Webapp and Websockets)
 
-> :information_source: Web Modeler is not included by default. Please follow [the instructions below](#web-modeler-self-managed) to install it.
-
+<a id="start-full-profile"></a>
 Clone this repo and issue the following command to start your environment:
 
 ```
-docker compose up -d
+docker compose --profile full up -d
 ```
 
 Wait a few minutes for the environment to start up and settle down. Monitor the logs, especially the Keycloak container log, to ensure the components have started.
@@ -59,6 +59,7 @@ Now you can navigate to the different web apps and log in with the user `demo` a
 - Optimize: [http://localhost:8083](http://localhost:8083)
 - Identity: [http://localhost:8084](http://localhost:8084)
 - Elasticsearch: [http://localhost:9200](http://localhost:9200)
+- Web Modeler: [http://localhost:8070](http://localhost:8070)
 
 Keycloak is used to manage users. Here you can log in with the user `admin` and password `admin`
 - Keycloak: [http://localhost:18080/auth/](http://localhost:18080/auth/)
@@ -68,23 +69,17 @@ The workflow engine Zeebe is available using gRPC at `localhost:26500`.
 To tear down the whole environment run the following command:
 
 ```
-docker compose down -v
+docker compose --profile full down -v
 ```
 
-Zeebe, Operate, Tasklist, along with Optimize require a separate network from Identity as you'll see in the docker-compose file.
+Zeebe, Operate, Tasklist, Web Modeler along with Optimize require a separate network from Identity as you'll see in the docker-compose file. Web Modeler also requires another separate network.
 
 ### Using the basic components
 
-If Optimize, Identity, and Keycloak are not needed you can use the [docker-compose-core.yaml](docker-compose-core.yaml) instead which does not include these components:
+If Optimize, Web Modeler, Identity, and Keycloak are not needed you can use the [docker-compose-core.yaml](docker-compose-core.yaml) instead which does not include these components:
 
 ```
 docker compose -f docker-compose-core.yaml up -d
-```
-**OR**
-
-Set parameter ```SEARCH_DB=opensearch``` in the file ```.env``` if you want to use OpenSearch instead of ElasticSearch
-```
-docker compose -f docker-compose-core.yaml --profile opensearch up -d
 ```
 
 ### Deploying BPMN diagrams
@@ -96,11 +91,11 @@ Feedback and updates are welcome!
 
 ## Securing the Zeebe API
 
-By default, the Zeebe GRPC API is publicly accessible without requiring any client credentials for development purposes.
+By default, the Zeebe gRPC API is publicly accessible without requiring any client credentials for development purposes.
 
-You can however enable authentication of GRPC requests in Zeebe by setting the environment variable `ZEEBE_AUTHENTICATION_MODE` to `identity`, e.g. via running:
+You can however enable authentication of gRPC requests in Zeebe by setting the environment variable `ZEEBE_AUTHENTICATION_MODE` to `identity`, e.g. via running:
 ```
-ZEEBE_AUTHENTICATION_MODE=identity docker compose up -d
+ZEEBE_AUTHENTICATION_MODE=identity docker compose --profile full up -d
 ```
 or by modifying the default value in the [`.env`](.env) file.
 
@@ -152,7 +147,7 @@ Once you are ready to deploy or execute processes use these settings to deploy t
 * URL: `http://localhost:26500`
 
 #### With Zeebe request authentication
-If you enabled authentication for GRPC requests on Zeebe you need to provide client credentials when deploying and executing processes:
+If you enabled [authentication for gRPC requests](#securing-the-zeebe-api) on Zeebe you need to provide client credentials when deploying and executing processes:
 * Authentication: `OAuth`
 * URL: `http://localhost:26500`
 * Client ID: `zeebe`
@@ -160,72 +155,57 @@ If you enabled authentication for GRPC requests on Zeebe you need to provide cli
 * OAuth URL: `http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token`
 * Audience: `zeebe-api`
 
-## Web Modeler Self-Managed
+## Web Modeler
 
-> :information_source: Web Modeler Self-Managed is available to Camunda enterprise customers only.
+> [!IMPORTANT]
+> Non-production installations of Web Modeler are restricted to five collaborators per project.
+> Refer to [the documentation](https://docs.camunda.io/docs/next/reference/licenses/) for more information.
 
-The Docker images for Web Modeler are available in a private registry. Enterprise customers either already have credentials to this registry, or they can request access to this registry through their CSM contact at Camunda.
+### Standalone setup
 
-To run Camunda Platform with Web Modeler Self-Managed clone this repo and issue the following commands:
+Web Modeler can be run standalone with only Identity, Keycloak and Postgres as dependencies by using the Docker Compose `modeling` profile.
 
-```
-$ docker login registry.camunda.cloud
-Username: your_username
-Password: ******
-Login Succeeded
-```
-
-#### To run Camunda Platform with Elasticsearch execute this commands
-
-1. Edit ```.env``` file and set parameter ```SEARCH_DB=elasticserach``` (this default value)
-2. Run command
-```
-$ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml up -d
-```
-3. To tear down the whole environment with ```ElasticSearch``` run the following command
+Issue the following commands to only start Web Modeler and its dependencies:
 
 ```
-$ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml down -v
+docker compose --profile modeling up -d
 ```
 
-If you want to delete everything (including any data you created).
-Alternatively, if you want to keep the data run:
+To tear down the whole environment run the following command:
 
 ```
-$ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml down
+docker compose --profile modeling down -v
 ```
 
-To run Camunda Platform with ```OpenSearch``` execute this commands
+> [!WARNING]
+> This will also delete any data you created.
 
-1. Edit ```.env``` file and set parameter ```SEARCH_DB=opensearch```
-2. Run command
-```
-$ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml --profile opensearch up -d
-```
-3. To tear down the whole environment with Elasticsearch run the following command (-v is optional flag. Use it, if you want to delete all the data)
+Alternatively, if you want to keep the data, run:
 
 ```
-$ docker compose -f docker-compose.yaml -f docker-compose-web-modeler.yaml --profile opensearch down -v
+docker compose --profile modeling down
 ```
 
 ### Login
-You can access Web Modeler Self-Managed and log in with the user `demo` and password `demo` at [http://localhost:8070](http://localhost:8070).
+You can access Web Modeler and log in with the user `demo` and password `demo` at [http://localhost:8070](http://localhost:8070).
 
 ### Deploy or execute a process
 
+The local Zeebe instance (that is started when using the Docker Compose [`full` profile](#start-full-profile)) is pre-configured in Web Modeler.
+
+Once you are ready to deploy or execute a process, you can just use this instance without having to enter the cluster endpoint manually.
+The correct authentication type is also preset based on the [`ZEEBE_AUTHENTICATION_MODE` environment variable](#securing-the-zeebe-api).
+
 #### Without authentication
-Once you are ready to deploy or execute processes use these settings to deploy to the local Zeebe instance:
-* Authentication: `None`
-* URL: `http://zeebe:26500`
+No additional input is required.
 
 #### With Zeebe request authentication
-If you enabled authentication for GRPC requests on Zeebe you need to provide client credentials when deploying and executing processes:
-* Authentication: `OAuth`
-* URL: `http://zeebe:26500`
+If you enabled [authentication for gRPC requests](#securing-the-zeebe-api) on Zeebe, use the following client credentials when deploying and executing processes:
 * Client ID: `zeebe`
 * Client secret: `zecret`
-* OAuth URL: `http://keycloak:18080/auth/realms/camunda-platform/protocol/openid-connect/token`
-* Audience: `zeebe-api`
+
+> [!NOTE]
+> The correct OAuth token URL and audience are preset internally.
 
 ### Emails
 The setup includes [Mailpit](https://github.com/axllent/mailpit) as a test SMTP server. It captures all emails sent by Web Modeler, but does not forward them to the actual recipients. 
@@ -252,13 +232,13 @@ $ DOCKER_BUILDKIT=0 docker build -t bitnami/keycloak:19.0.3 "https://github.com/
 
 ## Resource based authorizations
 
-You can control access to specific processes and decision tables in Operate and Tasklist with [resource-based authorization](https://docs.camunda.io/docs/self-managed/concepts/access-control/resource-authorizations/).
+You can control access to specific processes and decision tables in Operate and Tasklist with [resource based authorization](https://docs.camunda.io/docs/self-managed/concepts/access-control/resource-authorizations/).
 
 This feature is disabled by default and can be enabled by setting 
 `RESOURCE_AUTHORIZATIONS_ENABLED` to `true`, either via the [`.env`](.env) file or through the command line:
 
 ```
-RESOURCE_AUTHORIZATIONS_ENABLED=true docker compose up -d
+RESOURCE_AUTHORIZATIONS_ENABLED=true docker compose --profile full up -d
 ```
 
 ## Multi-Tenancy
@@ -269,12 +249,12 @@ This feature is disabled by default and can be enabled by setting
 `MULTI_TENANCY_ENABLED` to `true`, either via the [`.env`](.env) file or through the command line:
 
 ```
-ZEEBE_AUTHENICATION_MODE=identity MULTI_TENANCY_ENABLED=true docker compose up -d
+ZEEBE_AUTHENICATION_MODE=identity MULTI_TENANCY_ENABLED=true docker compose --profile full up -d
 ```
 
 As seen above the feature also requires you to use `identity` as an authentication provider.
 
-Ensure you [setup tenants in identity](https://docs.camunda.io/docs/self-managed/identity/user-guide/tenants/managing-tenants/) after you start the platform.
+Ensure you [setup tenants in identity](https://docs.camunda.io/docs/self-managed/identity/user-guide/tenants/managing-tenants/) after you started the platform.
 
 ## Camunda Platform 7
 
