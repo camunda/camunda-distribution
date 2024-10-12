@@ -15,6 +15,7 @@ on:
         description: directory to run the tests
         required: false
         type: string
+        default: docker-compose/camunda-8.6
       run_single_test:
         description: runs a single test
         required: false
@@ -39,15 +40,16 @@ jobs:
              sudo killall xsp4 || true
 
       - uses: actions/checkout@v4
+      - name: List files in the repository
+        run: |
+          echo "Listing files:"
+          ls -al
+
       - name: change search db
         if: ${{ contains(inputs.search_db, 'opensearch') }}
         run: |
           sudo sed -i 's/SEARCH_DB=elasticsearch/SEARCH_DB=opensearch/g' .env
 
-      - name: Login to private registry
-        if: ${{ inputs.directory != 'docker-compose/camunda-8.6' }}
-        run: >-
-          echo '${{ secrets.CI_DISTRIBUTION_REGISTRY_PASSWORD }}' | docker login -u ci-distribution --password-stdin  registry.camunda.cloud
 
       - name: Bring up containers
         working-directory: ${{ inputs.directory || '.' }}

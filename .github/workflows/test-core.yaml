@@ -10,9 +10,6 @@ jobs:
         include:
           - compose_args: "-f docker-compose-core.yaml"
             run_e2e_tests: false
-            directory: ""
-          - compose_args: "-f docker-compose-core.yaml"
-            run_e2e_tests: false
             directory: "docker-compose/camunda-8.6"
     uses: ./.github/workflows/template-deploy.yaml
     name: Test deploying from directory "${{ matrix.directory || 'root' }}"

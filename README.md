@@ -1,3 +1,5 @@
+
+
 # Camunda Platform 8
 
 This repository contains links to Camunda Platform 8 resources, the official release artifacts (binaries), and supporting config files for running Docker Compose as a local development option. 
@@ -261,7 +263,7 @@ This feature is disabled by default and can be enabled by setting
 RESOURCE_AUTHORIZATIONS_ENABLED=true docker compose up -d
 ```
 
-## Multi-Tenancy
+## Multi-Tenancy:
 
 You can use [multi-tenancy](https://docs.camunda.io/docs/self-managed/concepts/multi-tenancy/) to achieve tenant-based isolation.
 
@@ -282,3 +284,9 @@ Looking for information on Camunda Platform 7? Check out the links below:
 
 - [Documentation](https://docs.camunda.org/)
 - [GitHub](https://github.com/camunda/camunda-bpm-platform)
+
+# camunda-distribution
+Camunda 8 Self-Managed Distributions
+
+A mono repo for Camunda 8 Self-Managed Distributions .
+
