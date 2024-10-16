@@ -1,0 +1,37 @@
+name: "AWS Marketplace Build: licensemanager"
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "The image tag for licensemanager"
+        required: true
+        default: 0.0.1
+
+env:
+  MARKETPLACE_BASE_URL: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/login_to_aws
+        with:
+          aws-role-arn: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubAction-AssumeRoleWithAction"
+          aws-region: "us-east-1"
+          marketplace-base-url: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+      - name: Build the docker image
+        run: docker build -f aws-marketplace/licensemanager/Dockerfile -t $MARKETPLACE_BASE_URL/camunda/camunda8/licensemanager:$IMAGE_TAG licensemanager
+        env:
+          IMAGE_TAG: ${{ inputs.imageTag }}
+
+      - name: Push the docker image
+        run: docker push $MARKETPLACE_BASE_URL/camunda/camunda8/licensemanager:$IMAGE_TAG
+        env:
+          IMAGE_TAG: ${{ inputs.imageTag }}

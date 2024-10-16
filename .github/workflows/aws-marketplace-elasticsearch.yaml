@@ -1,0 +1,40 @@
+name: "AWS Marketplace Mirror: Elasticsearch"
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "The image tag for the elasticsearch image"
+        required: true
+        # renovate: datasource=docker depName=bitnami/elasticsearch
+        default: 8.15.2
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/aws-marketplace-elasticsearch.yaml'
+env:
+  MARKETPLACE_BASE_URL: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/login_to_aws
+        with:
+          aws-role-arn: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubAction-AssumeRoleWithAction"
+          aws-region: "us-east-1"
+          marketplace-base-url: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+
+      - name: mirror elasticsearch image
+        uses: ./.github/actions/mirror
+        with:
+          from: bitnami/elasticsearch:${{ inputs.imageTag }}
+          to: $MARKETPLACE_BASE_URL/camunda/camunda8/elasticsearch:${{ inputs.imageTag }}
+
