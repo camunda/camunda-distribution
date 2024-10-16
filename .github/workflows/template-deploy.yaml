@@ -36,7 +36,7 @@ jobs:
           docker compose ${{ inputs.compose_args }}
           up
           --quiet-pull
-          -ddelte 
+          -d
 
       - name: "Wait until (health: starting) goes away"
         run: >-
