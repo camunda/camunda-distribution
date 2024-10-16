@@ -36,9 +36,7 @@ jobs:
           docker compose ${{ inputs.compose_args }}
           up
           --quiet-pull
-          -d
-        with:
-          compose_args: '-f ./docker-compose/camunda-8.5/docker-compose.yaml'
+          -ddelte 
 
       - name: "Wait until (health: starting) goes away"
         run: >-
