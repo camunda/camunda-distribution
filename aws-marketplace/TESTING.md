@@ -6,10 +6,10 @@ The first step is to get access to an AWS "Subscription".
 
 ## Checking to see if you already have an AWS Subscription
 In the AWS Console, search for AWS Marketplace Subscriptions
-![marketplace-subscription-search](../blob/main/aws-marketplace/assets/marketplace-subscription-search.png)
+![marketplace-subscription-search](../aws-marketplace/assets/marketplace-subscription-search.png)
 
 An active "Camunda Self-Managed" subscription looks like this:
-![marketplace-subscription-list](../blob/main/aws-marketplace/assets/marketplace-subscription-list.png)
+![marketplace-subscription-list](../aws-marketplace/assets/marketplace-subscription-list.png)
 
 ## Option 1: Getting the AWS account permission to access the restricted new version
 
@@ -29,9 +29,9 @@ Enter your AWS account ID
 
 Then select a price of something small like a dollar.
 
-![create-offer-1](../blob/main/aws-marketplace/assets/create-offer-1.png)
-![create-offer-2](../blob/main/aws-marketplace/assets/create-offer-2.png)
-![create-offer-3](../blob/main/aws-marketplace/assets/create-offer-3.png)
+![create-offer-1](../aws-marketplace/assets/create-offer-1.png)
+![create-offer-2](../aws-marketplace/assets/create-offer-2.png)
+![create-offer-3](../aws-marketplace/assets/create-offer-3.png)
 
 TODO: include steps for accepting the private offer. Unfortunately I do not have permissions yet for this.
 

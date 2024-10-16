@@ -132,18 +132,18 @@ camunda
 ### Kubernetes service account name:
 camunda
 
-![release-form-1](../blob/main/aws-marketplace/assets/release-form-1.png)
-![release-form-2](../blob/main/aws-marketplace/assets/release-form-2.png)
+![release-form-1](../aws-marketplace/assets/release-form-1.png)
+![release-form-2](../aws-marketplace/assets/release-form-2.png)
 
 ## Viewing the status of the Marketplace Request
 
 https://aws.amazon.com/marketplace/management/requests
 
-![marketplace-status](../blob/main/aws-marketplace/assets/marketplace-status.png)
+![marketplace-status](../aws-marketplace/assets/marketplace-status.png)
 
 This page will tell you the status of the request to create a version, and will sometimes provide error messages that says why the version was denied. In my case, it failed once because the container image specified in the "Add a Version" form was not uploaded yet.
 
-![marketplace-issues](../blob/main/aws-marketplace/assets/marketplace-issues.png)
+![marketplace-issues](../aws-marketplace/assets/marketplace-issues.png)
 
 ## Testing a version
 

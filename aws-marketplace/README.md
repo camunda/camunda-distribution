@@ -44,7 +44,7 @@ What's odd about that is it's a helm chart and not a docker image, but there is 
 
 When I say this is "semi-automated", I mean that each workflow needs to be manually kicked off via filling out a form on the "Run workflow" button. For most of these github actions, the only input you need is the image tag. I have included renovate so that the default image tag should be the latest available.
 
-![ci-overview](../blob/main/aws-marketplace/assets/ci-overview.png)
+![ci-overview](../aws-marketplace/assets/ci-overview.png)
 
 ## Constraints relating to the Marketplace ECR
 
