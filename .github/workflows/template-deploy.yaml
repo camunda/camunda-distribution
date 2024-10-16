@@ -30,13 +30,15 @@ jobs:
       - name: Login to Docker Hub
 
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        
+
       - name: Bring up containers
         run: >-
           docker compose ${{ inputs.compose_args }}
           up
           --quiet-pull
           -d
+        with:
+          compose_args: '-f docker-compose/camunda-8.5
 
       - name: "Wait until (health: starting) goes away"
         run: >-
