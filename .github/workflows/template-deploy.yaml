@@ -38,7 +38,7 @@ jobs:
           --quiet-pull
           -d
         with:
-          compose_args: '-f docker-compose/camunda-8.5
+          compose_args: '-f docker-compose/camunda-8.5'
 
       - name: "Wait until (health: starting) goes away"
         run: >-
