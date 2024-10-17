@@ -1,0 +1,98 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "separateMinorPatch": true,
+  "minor": {
+    "enabled": true
+  },
+  "patch": {
+    "enabled": true
+  },
+  "helm-values": {
+    "fileMatch": ["(^|/).*?values.*?\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "addLabels": ["automerge"],
+      "automerge": true,
+      "ignoreTests": true
+    },
+    {
+      // Disable major version update for all Helm components.
+      "enabled": false,
+      "matchManagers": ["helmv3", "helm-values", "regex"],
+      "matchUpdateTypes": ["major"]
+    },
+    {
+      // Disable minor version update for previous Camunda releases which will only get patch updates.
+      "enabled": false,
+      "matchManagers": ["helm-values", "regex"],
+      "matchPaths": ["**/values/values-v8.*.yaml"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
+      // Enable non-major version update for current Camunda version.
+      "matchDatasources": ["github-releases", "docker", "regex"],
+      "matchPaths": ["**/values.yaml", "**/values/values-latest.yaml"],
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      // Enable patch version update for previous Camunda version.
+      "matchDatasources": ["github-releases", "docker", "regex"],
+      "matchPaths": ["**/values/values-v8.*.yaml"],
+      "matchUpdateTypes": ["patch"]
+    },
+    {
+      // Limit Web-Modeler version to 0.8.x for Camunda v8.1.
+      "matchManagers": ["regex"],
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["web-modeler-ee/modeler-restapi"],
+      "matchPaths": ["**/values/values-v8.1.yaml"],
+      "allowedVersions": "~0.8.0"
+    },
+    {
+      // Limit Elasticsearch version to latest supported version in Camunda v8.4.
+      // https://docs.camunda.io/docs/reference/supported-environments/#camunda-8-self-managed
+      "matchDatasources": ["docker"],
+      "matchPaths": ["**/values.yaml", "**/values/values-latest.yaml"],
+      "matchPackageNames": ["bitnami/elasticsearch"],
+      "allowedVersions": "~8.9.0"
+    },
+    // Limit tools and libs versions to the actual Distro CI Kubernetes cluster.
+    {
+      "matchPackagePatterns": ["kubectl"],
+      "allowedVersions": "<1.28.0"
+    },
+    {
+      "matchPackagePatterns": ["k8s.io/.*"],
+      "allowedVersions": "<0.28.0"
+    }
+  ],
+  "regexManagers": [
+    {
+      // This is mainly used to update Web-Modeler image tag.
+      // Web-Modeler Self-Managed version is different from SaaS version, hence, we use Web-Modeler API image tag
+      // as a source of truth for rest of WM components.
+      // Another use case is Elasticsearch public Docker registry.
+      "fileMatch": ["\\.yaml$"],
+      "datasourceTemplate":"docker",
+      "matchStrings": [
+        "# renovate: datasource=docker depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s*?(tag|imageTag|default): (?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    }
+  ],
+  "hostRules": [
+    {
+      "hostType": "docker",
+      "matchHost": "https://registry.camunda.cloud",
+      "username": "ci-distribution",
+      "password": "{{ secrets.DISTRO_CAMUNDA_DOCKER_REGISTRY_PASSWORD }}"
+    }
+  ]
+}
+

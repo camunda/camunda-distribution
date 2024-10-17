@@ -1,0 +1,20 @@
+name: 'mirror'
+inputs:
+  from:
+    default: "camunda/zeebe:8.2.7"
+  to:
+    default: "709825985650.dkr.ecr.us-east-1.amazonaws.com/camunda/zeebe:8.2.7"
+runs:
+  using: "composite"
+  steps:
+    - name: Pull the docker image
+      run: docker pull ${{ inputs.from }}
+      shell: bash
+
+    - name: Tag the docker image
+      run: docker tag ${{ inputs.from }} ${{ inputs.to }}
+      shell: bash
+
+    - name: Push the docker image
+      run: docker push ${{ inputs.to }}
+      shell: bash
