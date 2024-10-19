@@ -338,8 +338,8 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
-        soft: 65536
-        hard: 65536
+        soft: -1
+        hard: -1
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cat/health | grep -q green" ]
