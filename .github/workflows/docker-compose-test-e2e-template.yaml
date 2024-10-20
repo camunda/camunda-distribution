@@ -1,4 +1,4 @@
-name: "Docker Compose | Template - E2E Test - Setup"
+name: "Docker Compose | Test - E2E - Template"
 
 on:
   workflow_call:
@@ -13,8 +13,8 @@ on:
         type: string
       e2e-test-enabled:
         description: Run Playwright tests
-        required: true
         type: boolean
+        default: true
       e2e-test-directory:
         description: Directory of the E2E files
         required: false
@@ -29,8 +29,9 @@ env:
   COMPOSE_WORKING_DIRECTORY: docker-compose/versions/camunda-${{ inputs.camunda-version }}
 
 jobs:
-  test:
-    name: Test
+  run:
+    # if: contains(inputs.changed-versions, inputs.camunda-version)
+    name: Run
     runs-on: ubuntu-latest
     steps:
       - name: disable and stop mono-xsp4.service
