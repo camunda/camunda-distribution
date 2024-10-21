@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Operate"
+name: "AWS Marketplace | Mirror: Operate"
 
 on:
   workflow_dispatch:

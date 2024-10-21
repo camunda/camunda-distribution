@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Tasklist"
+name: "AWS Marketplace | Mirror: Tasklist"
 
 on:
   workflow_dispatch:

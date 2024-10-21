@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Web Modeler"
+name: "AWS Marketplace | Mirror: Web Modeler"
 
 on:
   workflow_dispatch:

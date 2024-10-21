@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Optimize"
+name: "AWS Marketplace | Mirror: Optimize"
 
 on:
   workflow_dispatch:

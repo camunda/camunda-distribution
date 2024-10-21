@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Camunda Helm chart"
+name: "AWS Marketplace | Mirror: Camunda Helm chart"
 
 on:
   workflow_dispatch:

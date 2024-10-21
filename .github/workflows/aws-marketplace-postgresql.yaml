@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Postgresql"
+name: "AWS Marketplace | Mirror: Postgresql"
 
 on:
   workflow_dispatch:

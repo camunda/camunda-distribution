@@ -1,4 +1,4 @@
-name: "AWS Marketplace Mirror: Elasticsearch"
+name: "AWS Marketplace | Mirror: Elasticsearch"
 
 on:
   workflow_dispatch:
