@@ -1,0 +1,49 @@
+name: "AWS Marketplace | Mirror: Tasklist"
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "The image tag for the Camunda images"
+        required: true
+        # renovate: datasource=docker depName=camunda/tasklist
+        default: 8.6.3
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/aws-marketplace-tasklist.yaml'
+
+env:
+  MARKETPLACE_BASE_URL: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/login_to_aws
+        with:
+          aws-role-arn: "arn:aws:iam::${{ secrets.DISTRO_CI_AWS_MPLACE_AWS_ACCOUNT_ID }}:role/GitHubAction-AssumeRoleWithAction"
+          aws-region: "us-east-1"
+          marketplace-base-url: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+      - name: Pull tasklist
+        run: docker pull camunda/tasklist:$IMAGE_TAG
+        env:
+          IMAGE_TAG: ${{ inputs.imageTag }}
+
+      - name: Tag tasklist
+        run: docker tag camunda/tasklist:$IMAGE_TAG $MARKETPLACE_BASE_URL/camunda/camunda8/tasklist:$IMAGE_TAG
+        env:
+          IMAGE_TAG: ${{ inputs.imageTag }}
+
+      - name: Push the tasklist image
+        run: docker push $MARKETPLACE_BASE_URL/camunda/camunda8/tasklist:$IMAGE_TAG
+        env:
+          IMAGE_TAG: ${{ inputs.imageTag }}
+

@@ -1,0 +1,41 @@
+name: "AWS Marketplace | Mirror: Postgresql"
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "The image tag for the postgresql image"
+        required: true
+        # renovate: datasource=docker depName=bitnami/postgresql
+        default: 15.8.0
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/aws-marketplace-postgresql.yaml'
+
+env:
+  MARKETPLACE_BASE_URL: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/login_to_aws
+        with:
+          aws-role-arn: "arn:aws:iam::${{ secrets.DISTRO_CI_AWS_MPLACE_AWS_ACCOUNT_ID }}:role/GitHubAction-AssumeRoleWithAction"
+          aws-region: "us-east-1"
+          marketplace-base-url: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+
+      - name: web modeler restapi
+        uses: ./.github/actions/mirror
+        with:
+          from: bitnami/postgresql:${{ inputs.imageTag }}
+          to: $MARKETPLACE_BASE_URL/camunda/camunda8/postgresql:${{ inputs.imageTag }}
+

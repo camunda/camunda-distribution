@@ -1,0 +1,63 @@
+name: "AWS Marketplace | Mirror: Web Modeler"
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "The image tag for the web-modeler image"
+        required: true
+        # renovate: datasource=docker depName=camunda/web-modeler lookupName=registry.camunda.cloud/web-modeler-ee/modeler-restapi
+        default: 8.6.2
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/aws-marketplace-modeler.yaml'
+
+env:
+  MARKETPLACE_BASE_URL: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/login_to_aws
+        with:
+          aws-role-arn: "arn:aws:iam::${{ secrets.DISTRO_CI_AWS_MPLACE_AWS_ACCOUNT_ID }}:role/GitHubAction-AssumeRoleWithAction"
+          aws-region: "us-east-1"
+          marketplace-base-url: "709825985650.dkr.ecr.us-east-1.amazonaws.com"
+
+      - name: Docker login to registry.camunda.cloud
+        run: docker login --username "$CAMUNDA_REGISTRY_USERNAME" --password "$CAMUNDA_REGISTRY_PASSWORD" registry.camunda.cloud
+        env:
+          CAMUNDA_REGISTRY_USERNAME: ${{ secrets.CAMUNDA_REGISTRY_USERNAME }}
+          CAMUNDA_REGISTRY_PASSWORD: ${{ secrets.CAMUNDA_REGISTRY_PASSWORD }}
+     
+      - name: web modeler restapi
+        uses: ./.github/actions/mirror
+        with:
+          from: registry.camunda.cloud/web-modeler-ee/modeler-restapi:${{ inputs.imageTag }}
+          to: $MARKETPLACE_BASE_URL/camunda/camunda8/modeler-restapi:${{ inputs.imageTag }}
+
+      - name: web modeler webapp
+        uses: ./.github/actions/mirror
+        with:
+          from: registry.camunda.cloud/web-modeler-ee/modeler-webapp:${{ inputs.imageTag }}
+          to: $MARKETPLACE_BASE_URL/camunda/camunda8/modeler-webapp:${{ inputs.imageTag }}
+
+      - name: web modeler websockets
+        uses: ./.github/actions/mirror
+        with:
+          from: registry.camunda.cloud/web-modeler-ee/modeler-websockets:${{ inputs.imageTag }}
+          to: $MARKETPLACE_BASE_URL/camunda/camunda8/modeler-websockets:${{ inputs.imageTag }}
+
+
+
+     
+
+
