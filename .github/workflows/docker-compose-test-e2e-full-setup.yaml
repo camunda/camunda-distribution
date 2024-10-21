@@ -1,0 +1,59 @@
+name: "Docker Compose | Test - E2E - Full Setup"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docker-compose/versions/**
+  pull_request:
+    paths:
+      - .github/workflows/docker-compose-test-e2e-template.yaml
+      - .github/workflows/docker-compose-test-e2e-full-setup.yaml
+      - docker-compose/versions/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  init:
+    name: Generate version matrix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - name: Generate versions
+        id: generate-versions-matrix
+        uses: ./.github/actions/generate-versions-matrix
+        with:
+          versions-path: "docker-compose/versions/camunda-8.*"
+    outputs:
+      unchanged-versions: ${{ steps.generate-versions-matrix.outputs.unchanged }}
+
+  exec:
+    needs: [init]
+    name: ${{ matrix.versions.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        versions:
+          - name: Camunda 8.3
+            camunda-version: "8.3"
+            compose-args: "-f docker-compose.yaml -f docker-compose-web-modeler.yaml"
+          - name: Camunda 8.4
+            camunda-version: "8.4"
+            compose-args: "-f docker-compose.yaml -f docker-compose-web-modeler.yaml"
+          - name: Camunda 8.5
+            camunda-version: "8.5"
+            compose-args: "-f docker-compose.yaml -f docker-compose-web-modeler.yaml"
+          - name: Camunda 8.6
+            camunda-version: "8.6"
+            compose-args: "--profile full"
+          - name: Camunda Alpha
+            camunda-version: "alpha"
+            compose-args: "--profile full"
+        exclude: ${{ fromJson(needs.init.outputs.unchanged-versions) }}
+    uses: ./.github/workflows/docker-compose-test-e2e-template.yaml
+    secrets: inherit
+    with:
+      camunda-version: ${{ matrix.versions.camunda-version }}
+      compose-args: ${{ matrix.versions.compose-args }}

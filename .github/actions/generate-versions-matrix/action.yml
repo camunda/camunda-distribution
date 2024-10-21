@@ -1,0 +1,46 @@
+name: Generate version matrix
+description: Find changed/unchanged versions and generate matrix for them to be used in GHA workflow matrix.
+
+inputs:
+  versions-path:
+    description: Versions path to match.
+    required: true
+
+outputs:
+  unchanged:
+    description: JSON matrix of unchanged versions which will be used as and input for GHA workflow matrix exclude.
+    value: ${{ steps.get-versions.outputs.matrix-unchanged }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get changed dirs
+      id: changed-files
+      uses: tj-actions/changed-files@48d8f15b2aaa3d255ca5af3eba4870f807ce6b3c # v45
+      with:
+        dir_names: "true"
+    - name: Generate matrix
+      shell: bash
+      id: get-versions
+      env:
+        ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        UNCHANGED_VERSIONS_TMP_FILE: unchanged_versions.txt
+      run: |
+        echo "Setting matrix based on changed files"
+        echo "Changed files:"
+        printf "%s\n" ${ALL_CHANGED_FILES}
+        touch ${UNCHANGED_VERSIONS_TMP_FILE}
+
+        ls -d ${{ inputs.versions-path }} | while read version_dir; do
+          if [[ $(echo ${ALL_CHANGED_FILES} | grep "${version_dir}") ]]; then
+            continue
+          else
+            camunda_version="$(echo ${version_dir} | rev | cut -d '-' -f 1 | rev)";
+            echo "Camunda version: ${camunda_version}"
+            echo "${camunda_version}" >> ${UNCHANGED_VERSIONS_TMP_FILE};
+          fi
+        done
+        # NOTE: The keys "versions" and "camunda-version" are hard-coded and should be used in the workflow matrix.
+        matrix_unchanged="$(cat ${UNCHANGED_VERSIONS_TMP_FILE} |
+          jq -s -c -R 'split("\n") | .[:-1] | map({"versions": {"camunda-version": .}})')"
+        echo "matrix-unchanged=${matrix_unchanged}" | tee -a $GITHUB_OUTPUT

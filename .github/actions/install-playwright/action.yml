@@ -1,0 +1,40 @@
+name: Install Playwright
+description: Install Playwright and its dependencies
+
+inputs:
+  working-directory:
+    description: Path of Playwright config and tests
+  browsers:
+    description: Playwright browsers to install
+    default: chromium
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@v4
+      id: npm-cache
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Check cache hit
+      shell: bash
+      run: |
+        echo "Cache hit: ${{ steps.npm-cache.outputs.cache-hit }}"
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: npm ci
+
+    - name: Install Playwright browsers
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: npx playwright install --with-deps ${{ inputs.browsers }}
